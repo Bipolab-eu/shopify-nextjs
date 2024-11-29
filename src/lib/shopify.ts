@@ -8,13 +8,15 @@ const client = createStorefrontApiClient({
   privateAccessToken: process.env.STOREFRONT_PRIVATE_API_KEY,
 });
 
-const productQuery = `
-  query Products($handle: Int) {
-    products(first: $handle) {
+/* Get all Products */
+const GetAllProducts = `
+  query Products {
+    products(first: 8) {
       edges {
         node {
           id
           title
+          handle
           description
           priceRange {
             minVariantPrice {
@@ -37,23 +39,47 @@ const productQuery = `
       }
     }
   }
-  `;
+  `
 
 export async function getStoreFront () {
-  
   try {
-    const { data, errors, extensions } = await client.request(productQuery, {
-      variables: {
-        handle: 6,
-      },
-    })
-
-    const { products: { edges } } = data
+    const { data, errors, extensions } = await client.request(GetAllProducts)
     
-    return { edges, errors, extensions }
+    if (errors) {
+      console.error("Error description:", errors.graphQLErrors);
+      return { data: null, errors, extensions };
+    }
+
+    return { data, errors: null, extensions };
 
   } catch (error) {
-    console.error(console.log(error))
+    console.error(error);
+    return { data: null, errors: [error], extensions: null };
   }
 }
 
+/* Get Product */
+const GetProduct = `
+  query ProductQuery($id: ID!) {
+  product(id: $id) {
+    id
+    title
+    handle
+  }
+}
+`
+
+export async function getProduct () {
+  try {
+    const { data } = await client.request(GetProduct, {
+      variables: {
+        id: 'gid://shopify/Product/9815019258178'
+      } 
+    })
+
+    return data
+
+  } catch (error) {
+      console.error(error);
+  }
+}
