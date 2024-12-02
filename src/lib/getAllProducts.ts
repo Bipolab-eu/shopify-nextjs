@@ -1,15 +1,7 @@
-'use server'
-
-import {createStorefrontApiClient} from '@shopify/storefront-api-client';
-
-const client = createStorefrontApiClient({
-  storeDomain: process.env.STORE_DOMAIN!,
-  apiVersion: '2024-10',
-  privateAccessToken: process.env.STOREFRONT_PRIVATE_API_KEY,
-});
+import  { client } from './storeAuth'
 
 /* Get all Products */
-const GetAllProducts = `
+const QUERY_PRODUCTS = `
   query Products {
     products(first: 8) {
       edges {
@@ -41,9 +33,9 @@ const GetAllProducts = `
   }
   `
 
-export async function getStoreFront () {
+export async function getAllProducts () {
   try {
-    const { data, errors, extensions } = await client.request(GetAllProducts)
+    const { data, errors, extensions } = await client.request(QUERY_PRODUCTS)
     
     if (errors) {
       console.error("Error description:", errors.graphQLErrors);
@@ -55,31 +47,5 @@ export async function getStoreFront () {
   } catch (error) {
     console.error(error);
     return { data: null, errors: [error], extensions: null };
-  }
-}
-
-/* Get Product */
-const GetProduct = `
-  query ProductQuery($id: ID!) {
-  product(id: $id) {
-    id
-    title
-    handle
-  }
-}
-`
-
-export async function getProduct () {
-  try {
-    const { data } = await client.request(GetProduct, {
-      variables: {
-        id: 'gid://shopify/Product/9815019258178'
-      } 
-    })
-
-    return data
-
-  } catch (error) {
-      console.error(error);
   }
 }

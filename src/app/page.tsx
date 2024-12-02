@@ -1,15 +1,39 @@
-import { getProduct, getStoreFront } from "@/lib/shopify";
+import { getAllProducts } from "@/lib/getAllProducts";
+import Image from "next/image";
+import Link from "next/link";
 
 export default async function Home() {
-  const { data: { products }} = await getStoreFront()
-  const {  product } = await getProduct()
-
-  console.log('TEST:' , products.edges)
-  console.log('Single product:' , product)
+  const { data: { products } } = await getAllProducts()
 
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      
+    <div className="mx-auto max-w-2xl px-4 py-16 sm:px-6 sm:py-24 lg:max-w-7xl lg:px-8">
+      <div className="mt-6 grid grid-cols-1 gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-4 xl:gap-x-8">
+        {products.edges.map((product: any) => (
+          <Link
+            key={product.node.id}
+            className="group relative"
+            href={product.node.handle}
+          >
+            <Image
+              width={100}
+              height={100}
+              className="aspect-square w-full rounded-md bg-gray-200 object-cover group-hover:opacity-75 lg:aspect-auto lg:h-80"
+              alt={product.node.handle}
+              src={product.node.media.edges[0].node.image.url}
+            >
+            </Image>
+            <div className="mt-4 flex justify-between">
+              <div>
+                <h3 className="text-sm text-gray-700">
+                  <span aria-hidden="true" className="absolute inset-0" />
+                  {product.node.title}
+                </h3>
+              </div>
+              <p className="text-sm font-medium text-gray-900">{product.node.priceRange.minVariantPrice.amount}</p>
+            </div>
+          </Link>
+        ))}
+      </div>
     </div>
   );
 }
